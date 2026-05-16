@@ -98,11 +98,25 @@ def torch(state):
 
 import socket
 
-# Device Identity 
-try:
-    DEVICE_NAME = socket.gethostname()
-except:
-    DEVICE_NAME = "Galaxy Cyberdeck Alpha"
+def get_device_name():
+    """Tries to find a clean device name without nosy system calls."""
+    try:
+        # 1. Try custom termux hostname file
+        hostname_path = os.path.expandvars("$PREFIX/etc/hostname")
+        if os.path.exists(hostname_path):
+            with open(hostname_path, 'r') as f:
+                return f.read().strip()
+        
+        # 2. Try socket
+        name = socket.gethostname()
+        if name and name != "localhost":
+            return name
+            
+        return "Galaxy-Cyberdeck-Node"
+    except:
+        return "Galaxy-Cyberdeck-Node"
+
+DEVICE_NAME = get_device_name()
 
 ...
 
