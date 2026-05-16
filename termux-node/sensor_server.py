@@ -11,34 +11,30 @@ CORS(app) # This allows the laptop dashboard to talk to the phone
 SNAPSHOT_PATH = "/data/data/com.termux/files/home/snapshot.jpg"
 
 def run_termux_command(command):
-    """Executes a Termux:API command and returns the JSON output, or raw text if not JSON."""
+    """Executes a Termux:API command and returns JSON or raw text."""
     try:
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
-        if result.returncode == 0:
-            output = result.stdout.strip()
-            
-            # Aggressively find the JSON block
-            start = output.find('{')
-            end = output.rfind('}')
-            
-            if start == -1 or end == -1:
-                # Try brackets if it's a list
-                start = output.find('[')
-                end = output.rfind(']')
-            
-            if start != -1 and end != -1:
-                clean_json = output[start:end+1]
-                try:
-                    return json.loads(clean_json)
-                except:
-                    pass # Fall through to raw output
-            
-            # If no JSON or parsing failed, return raw cleaned output
-            return output
-        else:
+        output = result.stdout.strip()
+        
+        if result.returncode != 0:
             return {"error": "Command failed", "details": result.stderr}
+
+        # Try to find and parse JSON
+        start = output.find('{')
+        end = output.rfind('}')
+        if start == -1 or end == -1:
+            start = output.find('[')
+            end = output.rfind(']')
+            
+        if start != -1 and end != -1:
+            try:
+                return json.loads(output[start:end+1])
+            except:
+                pass # Not valid JSON, return raw
+        
+        return output
     except Exception as e:
-        return {"error": "Execution failed", "details": str(e), "raw_stdout": result.stdout}
+        return {"error": "Execution failed", "details": str(e)}
 
 @app.route('/')
 def status():
