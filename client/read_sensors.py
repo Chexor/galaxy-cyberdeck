@@ -54,21 +54,21 @@ def main():
     
     args = parser.parse_args()
 
+    # Fetch Static Info Once
+    info = get_sensor_data(args.ip, args.port, "info")
+    model = info.get("model", "Unknown") if info and "error" not in info else "Searching..."
+
     try:
         while True:
-            # Gather data
+            # Gather live data
             battery = get_sensor_data(args.ip, args.port, "battery")
             accel = get_sensor_data(args.ip, args.port, "accelerometer")
-            info = get_sensor_data(args.ip, args.port, "info")
 
             # Update Display
             clear_screen()
             print(f"\033[95m{banner_art}\033[0m")
             print(f"\033[92m[CONNECTED]\033[0m Phone IP: {args.ip}:{args.port}")
-            
-            if info and "error" not in info:
-                model = info.get("model", "Unknown")
-                print(f"Device: {model}")
+            print(f"Device: {model}")
 
             if battery and "error" not in battery:
                 level = battery.get("percentage", 0)
