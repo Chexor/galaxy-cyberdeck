@@ -19,10 +19,23 @@ This project is currently in **Phase 1: Laptop First**. We validate everything o
 - Run `python laptop-client/read_sensors.py --ip <PHONE_IP>`.
 - See [Laptop Setup Guide](docs/setup-laptop.md) for details.
 
-## Project Structure
-- `termux-node/`: Flask server for the Android phone.
-- `laptop-client/`: Polling client for development and testing.
-- `docs/`: Setup and architectural documentation.
+## API Endpoints (Phase 1)
+- `GET /battery`: Battery level, health, and charging status.
+- `GET /accelerometer`: Real-time X, Y, Z motion data.
+- `GET /snapshot`: Captures and returns a JPEG photo from the back camera.
+- `GET /torch/on` / `GET /torch/off`: Controls the phone's flashlight.
+- `GET /info`: Device model and OS version.
+
+## Usage
+### Taking a Photo from your Laptop:
+```bash
+curl -o capture.jpg http://<PHONE_IP>:5000/snapshot
+```
+
+### Controlling the Torch:
+```bash
+curl http://<PHONE_IP>:5000/torch/on
+```
 
 ## Why Laptop First?
 Iterating directly on a Raspberry Pi can be slow due to network constraints or hardware access. Developing on a laptop allows for:

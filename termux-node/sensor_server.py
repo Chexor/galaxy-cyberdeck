@@ -1,8 +1,12 @@
 import subprocess
 import json
-from flask import Flask, jsonify
+import os
+from flask import Flask, jsonify, send_file
 
 app = Flask(__name__)
+
+# Paths
+SNAPSHOT_PATH = "/data/data/com.termux/files/home/snapshot.jpg"
 
 def run_termux_command(command):
     """Executes a Termux:API command and returns the JSON output, ignoring ALL non-JSON text."""
@@ -43,12 +47,6 @@ def location():
     # Use -p last to get the last known location quickly
     return jsonify(run_termux_command("termux-location -p last"))
 
-@app.route('/debug/accelerometer')
-def debug_accelerometer():
-    # This endpoint returns the pure raw string from the command line.
-    result = subprocess.run("termux-sensor -n 1 -s Accelerometer", capture_output=True, text=True, shell=True)
-    return result.stdout
-
 @app.route('/accelerometer')
 def accelerometer():
     # We take 1 sample now that we've confirmed the sensor is responsive.
@@ -76,12 +74,25 @@ def accelerometer():
     except Exception as e:
         return jsonify({"error": "Parsing failed", "details": str(e), "raw": data})
 
-@app.route('/sensors')
-def sensors():
-    # Example: getting accelerometer and gyroscope data once
-    # termux-sensor -n 1 returns data for all sensors once.
-    # We might want to filter this in the future.
-    return jsonify(run_termux_command("termux-sensor -n 1"))
+@app.route('/snapshot')
+def snapshot():
+    """Takes a photo and returns the image."""
+    try:
+        # -c 0 uses the main back camera
+        if os.path.exists(SNAPSHOT_PATH):
+            os.remove(SNAPSHOT_PATH)
+            
+        subprocess.run(f"termux-camera-photo -c 0 {SNAPSHOT_PATH}", shell=True, check=True)
+        return send_file(SNAPSHOT_PATH, mimetype='image/jpeg')
+    except Exception as e:
+        return jsonify({"error": "Camera failed", "details": str(e)})
+
+@app.route('/torch/<state>')
+def torch(state):
+    """Turns the flashlight on or off."""
+    mode = "on" if state.lower() == "on" else "off"
+    subprocess.run(f"termux-torch {mode}", shell=True)
+    return jsonify({"torch": mode})
 
 @app.route('/info')
 def info():
