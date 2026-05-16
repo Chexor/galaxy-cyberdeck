@@ -22,8 +22,12 @@ def get_sensor_data(ip, port, endpoint):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching {endpoint}: {e}")
-        return None
+        return {"error": str(e)}
+
+def clear_screen():
+    # ANSI escape code to clear screen and move cursor to (0,0)
+    sys.stdout.write("\033[H\033[J")
+    sys.stdout.flush()
 
 def main():
     banner_art = r"""
@@ -42,8 +46,6 @@ def main():
          __/ |                                    
         |___/                                     
     """
-    print(f"\033[95m{banner_art}\033[0m")
-    print("\033[92m[SYSTEM READY]\033[0m Initializing Galaxy-Cyberdeck Node...")
     
     parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Universal Client")
     parser.add_argument("--ip", default=config.PHONE_IP, help=f"IP address of the Galaxy phone (default: {config.PHONE_IP})")
@@ -52,44 +54,50 @@ def main():
     
     args = parser.parse_args()
 
-    print(f"Connecting to Galaxy Cyberdeck at {args.ip}:{args.port}...")
-    
-    # Test connection
-    status = get_sensor_data(args.ip, args.port, "")
-    if status:
-        print(f"Server Status: {status.get('status')} - {status.get('message')}")
-    else:
-        print("Could not connect to server. Check IP and ensure server is running.")
-        sys.exit(1)
-
     try:
         while True:
+            # Gather data
             battery = get_sensor_data(args.ip, args.port, "battery")
-            if battery:
-                print(f"\n--- Battery Status ---")
-                print(f"Level: {battery.get('percentage')}%")
-                print(f"Status: {battery.get('status')}")
-                print(f"Health: {battery.get('health')}")
-            
-            # Fetch Accelerometer
             accel = get_sensor_data(args.ip, args.port, "accelerometer")
+            info = get_sensor_data(args.ip, args.port, "info")
+
+            # Update Display
+            clear_screen()
+            print(f"\033[95m{banner_art}\033[0m")
+            print(f"\033[92m[CONNECTED]\033[0m Phone IP: {args.ip}:{args.port}")
+            
+            if info and "error" not in info:
+                model = info.get("model", "Unknown")
+                print(f"Device: {model}")
+
+            if battery and "error" not in battery:
+                level = battery.get("percentage", 0)
+                status = battery.get("status", "Unknown")
+                # Simple progress bar for battery
+                bar_len = 20
+                filled = int(level / 100 * bar_len)
+                bar = "█" * filled + "-" * (bar_len - filled)
+                print(f"\n--- Power ---")
+                print(f"[{bar}] {level}% ({status})")
+            
             if accel and "error" not in accel:
                 x, y, z = accel.get("x", 0), accel.get("y", 0), accel.get("z", 0)
-                print(f"--- Orientation ---")
-                print(f"X: {x:.2f}, Y: {y:.2f}, Z: {z:.2f}")
+                print(f"\n--- Orientation ---")
+                print(f"X: {x:6.2f} | Y: {y:6.2f} | Z: {z:6.2f}")
                 
-                # Simple orientation logic
                 if abs(z) > 8 and abs(x) < 2 and abs(y) < 2:
                     orientation = "Flat on Table"
                 elif abs(x) > 5 or abs(y) > 5:
                     orientation = "Tilted / Handheld"
                 else:
-                    orientation = "Moving..."
-                print(f"Mode: {orientation}")
+                    orientation = "Sensing..."
+                print(f"Status: {orientation}")
 
+            print(f"\n\033[90mPress Ctrl+C to exit. Refreshing every {args.interval}s...\033[0m")
             time.sleep(args.interval)
+            
     except KeyboardInterrupt:
-        print("\nExiting...")
+        print("\n\033[93m[DISCONNECTED]\033[0m Cyberdeck Client Stopped.")
 
 if __name__ == "__main__":
     main()
