@@ -26,8 +26,7 @@ def get_sensor_data(ip, port, endpoint):
         return None
 
 def main():
-    print(r"""
-    \033[95m
+    banner_art = r"""
    _____       _                                  
   / ____|     | |                                 
  | |  __  __ _| | __ ___  ___   _                 
@@ -42,9 +41,10 @@ def main():
   \_____\__, |_.__/ \___|_|  \__,_|\___|\___|_|\_\
          __/ |                                    
         |___/                                     
-    \033[0m
-    \033[92m[SYSTEM READY]\033[0m Initializing Galaxy-Cyberdeck Node...
-    """)
+    """
+    print(f"\033[95m{banner_art}\033[0m")
+    print("\033[92m[SYSTEM READY]\033[0m Initializing Galaxy-Cyberdeck Node...")
+    
     parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Universal Client")
     parser.add_argument("--ip", default=config.PHONE_IP, help=f"IP address of the Galaxy phone (default: {config.PHONE_IP})")
     parser.add_argument("--port", default=config.PHONE_PORT, type=int, help=f"Port of the Termux server (default: {config.PHONE_PORT})")
