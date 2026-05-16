@@ -212,6 +212,7 @@
         let NODE_IP = "192.168.0.137"; // Change this to your phone's IP
         const PORT = 5000;
         let torchOn = false;
+        let isPolling = false;
 
         const log = (msg) => {
             const display = document.getElementById('log-display');
@@ -222,57 +223,72 @@
 
         async function fetchSensor(endpoint) {
             try {
-                const response = await fetch(`http://${NODE_IP}:${PORT}/${endpoint}`, { timeout: 2000 });
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                // Use a short timeout to prevent hanging requests
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                
+                const response = await fetch(`http://${NODE_IP}:${PORT}/${endpoint}`, { 
+                    signal: controller.signal 
+                });
+                
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return await response.json();
             } catch (e) {
-                return { error: e.message };
+                return { error: e.name === 'AbortError' ? 'Timeout' : e.message };
             }
         }
 
         async function updateDashboard() {
-            // Update Connection Status
-            const info = await fetchSensor('info');
-            const dot = document.getElementById('dot');
-            const nodeName = document.getElementById('node-name');
-            const nodeIpDisp = document.getElementById('node-ip');
-            
-            nodeIpDisp.innerText = NODE_IP;
+            if (isPolling) return; // Prevent overlapping loops
+            isPolling = true;
 
-            if (info && !info.error) {
-                dot.className = "status-dot status-online";
-                nodeName.innerText = info.model || "ALIVE";
-            } else {
-                dot.className = "status-dot status-offline";
-                nodeName.innerText = "OFFLINE";
-            }
+            try {
+                // 1. Connection Status
+                const info = await fetchSensor('info');
+                const dot = document.getElementById('dot');
+                const nodeName = document.getElementById('node-name');
+                const nodeIpDisp = document.getElementById('node-ip');
+                nodeIpDisp.innerText = NODE_IP;
 
-            // Update Battery
-            const battery = await fetchSensor('battery');
-            if (battery && !battery.error) {
-                const level = battery.percentage;
-                document.getElementById('battery-text').innerText = `${level}%`;
-                document.getElementById('battery-bar').style.width = `${level}%`;
-                document.getElementById('battery-status').innerText = `Status: ${battery.status}`;
-                document.getElementById('battery-health').innerText = `Health: ${battery.health}`;
-                
-                // Color bar based on level
-                if (level < 20) document.getElementById('battery-bar').style.backgroundColor = 'var(--crit-color)';
-                else if (level < 50) document.getElementById('battery-bar').style.backgroundColor = 'var(--warn-color)';
-                else document.getElementById('battery-bar').style.backgroundColor = 'var(--main-color)';
-            }
+                if (info && !info.error) {
+                    dot.className = "status-dot status-online";
+                    nodeName.innerText = info.model || "ALIVE";
+                } else {
+                    dot.className = "status-dot status-offline";
+                    nodeName.innerText = "OFFLINE";
+                }
 
-            // Update Motion
-            const accel = await fetchSensor('accelerometer');
-            if (accel && !accel.error) {
-                document.getElementById('accel-x').innerText = accel.x.toFixed(2);
-                document.getElementById('accel-y').innerText = accel.y.toFixed(2);
-                document.getElementById('accel-z').innerText = accel.z.toFixed(2);
-                
-                let mode = "STATIONARY";
-                if (Math.abs(accel.z) > 8 && Math.abs(accel.x) < 2) mode = "FLAT ON TABLE";
-                else if (Math.abs(accel.x) > 4 || Math.abs(accel.y) > 4) mode = "HANDHELD / TILTED";
-                document.getElementById('motion-status').innerText = `NODE STATUS: ${mode}`;
+                // 2. Battery
+                const battery = await fetchSensor('battery');
+                if (battery && !battery.error) {
+                    const level = battery.percentage;
+                    document.getElementById('battery-text').innerText = `${level}%`;
+                    document.getElementById('battery-bar').style.width = `${level}%`;
+                    document.getElementById('battery-status').innerText = `Status: ${battery.status}`;
+                    document.getElementById('battery-health').innerText = `Health: ${battery.health}`;
+                    
+                    if (level < 20) document.getElementById('battery-bar').style.backgroundColor = 'var(--crit-color)';
+                    else if (level < 50) document.getElementById('battery-bar').style.backgroundColor = 'var(--warn-color)';
+                    else document.getElementById('battery-bar').style.backgroundColor = 'var(--main-color)';
+                }
+
+                // 3. Motion
+                const accel = await fetchSensor('accelerometer');
+                if (accel && !accel.error) {
+                    document.getElementById('accel-x').innerText = accel.x.toFixed(2);
+                    document.getElementById('accel-y').innerText = accel.y.toFixed(2);
+                    document.getElementById('accel-z').innerText = accel.z.toFixed(2);
+                    
+                    let mode = "STATIONARY";
+                    if (Math.abs(accel.z) > 8 && Math.abs(accel.x) < 2) mode = "FLAT ON TABLE";
+                    else if (Math.abs(accel.x) > 4 || Math.abs(accel.y) > 4) mode = "HANDHELD / TILTED";
+                    document.getElementById('motion-status').innerText = `NODE STATUS: ${mode}`;
+                }
+            } catch (err) {
+                console.error("Dashboard Loop Error:", err);
+            } finally {
+                isPolling = false;
             }
         }
 
@@ -301,7 +317,7 @@
             }
         }
 
-        // Start Polling
+        // Start Polling with a safer 2-second interval
         setInterval(updateDashboard, 2000);
         updateDashboard();
 
