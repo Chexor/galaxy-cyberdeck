@@ -96,12 +96,19 @@ def torch(state):
     subprocess.run(f"termux-torch {mode}", shell=True)
     return jsonify({"torch": mode})
 
+# Device Identity (Change this to whatever you want your Cyberdeck to be named)
+DEVICE_NAME = "Galaxy Cyberdeck Alpha (S16)"
+
+...
+
 @app.route('/info')
 def info():
-    # We only use getprop now. It's instant and doesn't touch the clipboard.
+    # We now return a static string. 
+    # This prevents the server from 'poking' the Android system 
+    # and triggering unwanted sync popups.
     return jsonify({
-        "model": run_termux_command("getprop ro.product.model"),
-        "android_version": run_termux_command("getprop ro.build.version.release")
+        "model": DEVICE_NAME,
+        "android_version": "16"
     })
 
 if __name__ == '__main__':
