@@ -11,7 +11,7 @@ try:
 except ImportError:
     # Fallback if config.py is missing
     class config:
-        PHONE_IP = "192.168.0.137"
+        PHONE_IP = "YOUR_PHONE_IP_HERE"
         PHONE_PORT = 5000
         POLL_INTERVAL = 1
 
