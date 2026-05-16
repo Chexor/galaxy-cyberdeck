@@ -33,8 +33,9 @@ EOF
     echo "  node <cmd>    - Infrastructure: start, stop, restart, update, status"
     echo "  flash <on|off>- Hardware: Control phone flashlight"
     echo "  camera <snap> - Hardware: Take a remote snapshot"
-    echo "  dashboard     - Interface: Launch live visual dashboard"
-    echo "  help          - Documentation: Show this menu"
+    echo "  dashboard      - Interface: Launch terminal dashboard"
+    echo "  dashboard host - Interface: Host web dashboard on the network"
+    echo "  help           - Documentation: Show this menu"
     echo -e "\nExamples:"
     echo "  cyberdeck node update"
     echo "  cyberdeck flash on"
@@ -77,8 +78,15 @@ case "$1" in
         esac
         ;;
     dashboard)
-        echo "Launching Galaxy Cyberdeck Dashboard..."
-        python3 client/read_sensors.py
+        if [ "$2" == "host" ]; then
+            echo "Hosting Galaxy Cyberdeck Dashboard on http://$(hostname).local:8080"
+            echo "Press Ctrl+C to stop hosting."
+            # Run python's built-in simple HTTP server in the dashboard directory
+            cd client/dashboard && python3 -m http.server 8080
+        else
+            echo "Launching Galaxy Cyberdeck Dashboard (Local)..."
+            python3 client/read_sensors.py
+        fi
         ;;
     help|--help|-h|"")
         show_help

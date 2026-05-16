@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Cyberdeck Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --main-color: #00ff41; /* Hacker Green */
+            --accent-color: #bc13fe; /* Neon Purple */
+            --warn-color: #ffaa00;
+            --crit-color: #ff0000;
+            --text-font: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--main-color);
+            font-family: var(--text-font);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid var(--main-color);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Battery Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #222;
+            border-radius: 5px;
+            height: 30px;
+            margin-top: 10px;
+            border: 1px solid var(--main-color);
+        }
+
+        #battery-bar {
+            height: 100%;
+            background-color: var(--main-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--main-color);
+            color: var(--main-color);
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--main-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px var(--main-color);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Camera Feed */
+        #snap-display {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--accent-color);
+            margin-top: 10px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+        }
+
+        /* Status LEDs */
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #444;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-online { background-color: var(--main-color); box-shadow: 0 0 5px var(--main-color); }
+        .status-offline { background-color: var(--crit-color); }
+
+        #config-banner {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GALAXY CYBERDECK : : COCKPIT</h1>
+        <div id="connection-status">
+            <span class="status-dot" id="dot"></span>
+            NODE: <span id="node-name">SEARCHING...</span> @ <span id="node-ip">0.0.0.0</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Power Module -->
+        <div class="card">
+            <h2>Power Module</h2>
+            <div class="stat-value" id="battery-text">--%</div>
+            <div class="progress-container">
+                <div id="battery-bar"></div>
+            </div>
+            <p id="battery-status">Status: Unknown</p>
+            <p id="battery-health">Health: Unknown</p>
+        </div>
+
+        <!-- Motion Module -->
+        <div class="card">
+            <h2>Motion Sensors</h2>
+            <div id="orientation-viz" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; text-align: center;">
+                X: <span id="accel-x">0.00</span><br>
+                Y: <span id="accel-y">0.00</span><br>
+                Z: <span id="accel-z">0.00</span>
+            </div>
+            <p id="motion-status" style="color: var(--warn-color);">NODE STATUS: STATIONARY</p>
+        </div>
+
+        <!-- Vision Module -->
+        <div class="card" style="grid-column: span 1;">
+            <h2>Vision System</h2>
+            <div id="snap-display">NO SIGNAL</div>
+            <div class="btn-group" style="margin-top: 15px;">
+                <button onclick="takeSnap()">Capture Snap</button>
+                <button id="torch-btn" onclick="toggleTorch()">Torch: OFF</button>
+            </div>
+        </div>
+
+        <!-- System Terminal -->
+        <div class="card">
+            <h2>System Logs</h2>
+            <div id="log-display" style="font-size: 0.7rem; overflow-y: auto; height: 180px; color: #888;">
+                [INFO] Initializing Web Dashboard...<br>
+                [INFO] Ready for connection.
+            </div>
+        </div>
+    </div>
+
+    <div id="config-banner">
+        Configure Node IP in config.js
+    </div>
+
+    <!-- We use a small script to inject the config -->
+    <script>
+        // Default Config (Will be overridden by config.py values later)
+        let NODE_IP = "192.168.0.137"; // Change this to your phone's IP
+        const PORT = 5000;
+        let torchOn = false;
+
+        const log = (msg) => {
+            const display = document.getElementById('log-display');
+            const time = new Date().toLocaleTimeString();
+            display.innerHTML += `[${time}] ${msg}<br>`;
+            display.scrollTop = display.scrollHeight;
+        };
+
+        async function fetchSensor(endpoint) {
+            try {
+                const response = await fetch(`http://${NODE_IP}:${PORT}/${endpoint}`, { timeout: 2000 });
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                return await response.json();
+            } catch (e) {
+                return { error: e.message };
+            }
+        }
+
+        async function updateDashboard() {
+            // Update Connection Status
+            const info = await fetchSensor('info');
+            const dot = document.getElementById('dot');
+            const nodeName = document.getElementById('node-name');
+            const nodeIpDisp = document.getElementById('node-ip');
+            
+            nodeIpDisp.innerText = NODE_IP;
+
+            if (info && !info.error) {
+                dot.className = "status-dot status-online";
+                nodeName.innerText = info.model || "ALIVE";
+            } else {
+                dot.className = "status-dot status-offline";
+                nodeName.innerText = "OFFLINE";
+            }
+
+            // Update Battery
+            const battery = await fetchSensor('battery');
+            if (battery && !battery.error) {
+                const level = battery.percentage;
+                document.getElementById('battery-text').innerText = `${level}%`;
+                document.getElementById('battery-bar').style.width = `${level}%`;
+                document.getElementById('battery-status').innerText = `Status: ${battery.status}`;
+                document.getElementById('battery-health').innerText = `Health: ${battery.health}`;
+                
+                // Color bar based on level
+                if (level < 20) document.getElementById('battery-bar').style.backgroundColor = 'var(--crit-color)';
+                else if (level < 50) document.getElementById('battery-bar').style.backgroundColor = 'var(--warn-color)';
+                else document.getElementById('battery-bar').style.backgroundColor = 'var(--main-color)';
+            }
+
+            // Update Motion
+            const accel = await fetchSensor('accelerometer');
+            if (accel && !accel.error) {
+                document.getElementById('accel-x').innerText = accel.x.toFixed(2);
+                document.getElementById('accel-y').innerText = accel.y.toFixed(2);
+                document.getElementById('accel-z').innerText = accel.z.toFixed(2);
+                
+                let mode = "STATIONARY";
+                if (Math.abs(accel.z) > 8 && Math.abs(accel.x) < 2) mode = "FLAT ON TABLE";
+                else if (Math.abs(accel.x) > 4 || Math.abs(accel.y) > 4) mode = "HANDHELD / TILTED";
+                document.getElementById('motion-status').innerText = `NODE STATUS: ${mode}`;
+            }
+        }
+
+        async function toggleTorch() {
+            torchOn = !torchOn;
+            const state = torchOn ? 'on' : 'off';
+            log(`Triggering Torch: ${state.toUpperCase()}`);
+            const res = await fetchSensor(`torch/${state}`);
+            document.getElementById('torch-btn').innerText = `Torch: ${state.toUpperCase()}`;
+        }
+
+        async function takeSnap() {
+            log("Requesting Remote Snapshot...");
+            const display = document.getElementById('snap-display');
+            display.innerText = "CAPTURING...";
+            
+            try {
+                // We add a timestamp to bypass browser cache
+                const url = `http://${NODE_IP}:${PORT}/snapshot?t=${Date.now()}`;
+                display.style.backgroundImage = `url('${url}')`;
+                display.innerText = "";
+                log("Snapshot Received.");
+            } catch (e) {
+                log(`Error: ${e.message}`);
+                display.innerText = "SIGNAL LOST";
+            }
+        }
+
+        // Start Polling
+        setInterval(updateDashboard, 2000);
+        updateDashboard();
+
+        // Check URL parameters for IP override
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('ip')) {
+            NODE_IP = urlParams.get('ip');
+            log(`IP Override Detected: ${NODE_IP}`);
+        }
+    </script>
+</body>
+</html>
