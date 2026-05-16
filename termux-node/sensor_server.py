@@ -11,11 +11,11 @@ CORS(app) # This allows the laptop dashboard to talk to the phone
 SNAPSHOT_PATH = "/data/data/com.termux/files/home/snapshot.jpg"
 
 def run_termux_command(command):
-    """Executes a Termux:API command and returns the JSON output, ignoring ALL non-JSON text."""
+    """Executes a Termux:API command and returns the JSON output, or raw text if not JSON."""
     try:
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
         if result.returncode == 0:
-            output = result.stdout
+            output = result.stdout.strip()
             
             # Aggressively find the JSON block
             start = output.find('{')
@@ -28,9 +28,13 @@ def run_termux_command(command):
             
             if start != -1 and end != -1:
                 clean_json = output[start:end+1]
-                return json.loads(clean_json)
+                try:
+                    return json.loads(clean_json)
+                except:
+                    pass # Fall through to raw output
             
-            return {"error": "No JSON found", "raw_stdout": output}
+            # If no JSON or parsing failed, return raw cleaned output
+            return output
         else:
             return {"error": "Command failed", "details": result.stderr}
     except Exception as e:
