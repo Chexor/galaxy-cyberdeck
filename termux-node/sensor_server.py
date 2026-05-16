@@ -96,16 +96,18 @@ def torch(state):
     subprocess.run(f"termux-torch {mode}", shell=True)
     return jsonify({"torch": mode})
 
-# Device Identity (Change this to whatever you want your Cyberdeck to be named)
-DEVICE_NAME = "Galaxy Cyberdeck Alpha (S16)"
+import socket
+
+# Device Identity 
+try:
+    DEVICE_NAME = socket.gethostname()
+except:
+    DEVICE_NAME = "Galaxy Cyberdeck Alpha"
 
 ...
 
 @app.route('/info')
 def info():
-    # We now return a static string. 
-    # This prevents the server from 'poking' the Android system 
-    # and triggering unwanted sync popups.
     return jsonify({
         "model": DEVICE_NAME,
         "android_version": "16"
