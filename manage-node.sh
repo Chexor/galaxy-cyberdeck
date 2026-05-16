@@ -13,9 +13,9 @@ REMOTE_MANAGE="$REMOTE_HOME/manage.sh"
 
 case "$1" in
     start|stop|restart|status)
-        # Nudge the phone to wake it up before sending the command
-        echo "Nudging Node at $NODE_IP..."
-        ssh -p $NODE_PORT $NODE_IP "input keyevent KEYCODE_WAKEUP"
+        # Nudge the phone to wake it up using the Termux Wake Lock
+        echo "Nudging Node at $NODE_IP (Acquiring Wake Lock)..."
+        ssh -p $NODE_PORT $NODE_IP "termux-wake-lock"
         sleep 1
         echo "Sending $1 command to Node at $NODE_IP..."
         ssh -p $NODE_PORT $NODE_IP "$REMOTE_MANAGE $1"
