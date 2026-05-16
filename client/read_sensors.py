@@ -26,7 +26,7 @@ def get_sensor_data(ip, port, endpoint):
         return None
 
 def main():
-    print("""
+    print(r"""
     \033[95m
    _____       _                                  
   / ____|     | |                                 
