@@ -2,8 +2,10 @@ import subprocess
 import json
 import os
 from flask import Flask, jsonify, send_file
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app) # This allows the laptop dashboard to talk to the phone
 
 # Paths
 SNAPSHOT_PATH = "/data/data/com.termux/files/home/snapshot.jpg"

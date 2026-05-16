@@ -2,6 +2,18 @@ import requests
 import time
 import argparse
 import sys
+import os
+
+# Add parent directory to path so we can import config.py
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    import config
+except ImportError:
+    # Fallback if config.py is missing
+    class config:
+        PHONE_IP = "192.168.0.137"
+        PHONE_PORT = 5000
+        POLL_INTERVAL = 1
 
 def get_sensor_data(ip, port, endpoint):
     url = f"http://{ip}:{port}/{endpoint}"
@@ -14,10 +26,10 @@ def get_sensor_data(ip, port, endpoint):
         return None
 
 def main():
-    parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Laptop Client")
-    parser.add_argument("--ip", required=True, help="IP address of the Galaxy phone")
-    parser.add_argument("--port", default=5000, type=int, help="Port of the Termux server (default: 5000)")
-    parser.add_argument("--interval", default=2, type=int, help="Polling interval in seconds (default: 2)")
+    parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Pi Client")
+    parser.add_argument("--ip", default=config.PHONE_IP, help=f"IP address of the Galaxy phone (default: {config.PHONE_IP})")
+    parser.add_argument("--port", default=config.PHONE_PORT, type=int, help=f"Port of the Termux server (default: {config.PHONE_PORT})")
+    parser.add_argument("--interval", default=config.POLL_INTERVAL, type=int, help=f"Polling interval in seconds (default: {config.POLL_INTERVAL})")
     
     args = parser.parse_args()
 

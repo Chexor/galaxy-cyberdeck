@@ -5,19 +5,26 @@ Turn your Samsung Galaxy phone into a portable smart terminal and sensor node fo
 ## Project Goal
 Create a bridge between Android's powerful hardware sensors (GPS, Accelerometer, Battery) and a central controller (initially a Laptop, later a Raspberry Pi).
 
-## Quick Start (Phase 1)
-This project is currently in **Phase 1: Laptop First**. We validate everything on a laptop before deploying to a Pi.
+## Quick Start (Phase 2)
+This project is now in **Phase 2: Pi Deployment**. We are moving the "Brain" to a Raspberry Pi.
 
 ### 1. Setup the Phone
-- Install **Termux** and **Termux:API**.
+- Install **Termux**, **Termux:API**, and **Termux:Boot**.
 - Clone this repo in Termux.
 - Run `python termux-node/sensor_server.py`.
 - See [Termux Setup Guide](docs/setup-termux.md) for details.
 
-### 2. Setup the Laptop
-- Clone this repo on your laptop.
-- Run `python laptop-client/read_sensors.py --ip <PHONE_IP>`.
-- See [Laptop Setup Guide](docs/setup-laptop.md) for details.
+### 2. Setup the Pi
+- Clone this repo on your Raspberry Pi.
+- Update `config.py` with your phone's IP address.
+- Run `python pi-client/read_sensors.py`.
+- See [Pi Setup Guide](docs/setup-raspberry-pi.md) for details.
+
+## Project Structure
+- `termux-node/`: Flask server for the Android phone.
+- `pi-client/`: Polling client for the Raspberry Pi.
+- `config.py`: Central configuration for device IPs and ports.
+- `docs/`: Setup and architectural documentation.
 
 ## API Endpoints (Phase 1)
 - `GET /battery`: Battery level, health, and charging status.
@@ -27,7 +34,7 @@ This project is currently in **Phase 1: Laptop First**. We validate everything o
 - `GET /info`: Device model and OS version.
 
 ## Usage
-### Taking a Photo from your Laptop:
+### Taking a Photo:
 ```bash
 curl -o capture.jpg http://<PHONE_IP>:5000/snapshot
 ```
@@ -37,13 +44,12 @@ curl -o capture.jpg http://<PHONE_IP>:5000/snapshot
 curl http://<PHONE_IP>:5000/torch/on
 ```
 
-## Why Laptop First?
-Iterating directly on a Raspberry Pi can be slow due to network constraints or hardware access. Developing on a laptop allows for:
+## Why Laptop First? (Phase 1)
+We used the laptop for initial prototyping to allow for:
 - Immediate feedback.
 - Robust debugging tools.
 - Faster code deployment.
 
 ## Future Plans
-- **Phase 2:** Raspberry Pi deployment.
 - **Phase 3:** Camera streaming (MJPEG/WebRTC).
 - **Phase 4:** Integration with ErikaHQ AI backend.
