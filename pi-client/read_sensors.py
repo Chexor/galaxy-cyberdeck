@@ -26,6 +26,26 @@ def get_sensor_data(ip, port, endpoint):
         return None
 
 def main():
+    print("""
+    \033[95m
+     ________  ________  ___       ________  ___  ___  ___    ___ 
+    |\   ____\|\   __  \|\  \     |\   __  \|\  \|\  \|\  \  /  /|
+    \ \  \___|\ \  \|\  \ \  \    \ \  \|\  \ \  \ \  \ \  \/  / /
+     \ \  \  __\ \   __  \ \  \    \ \   __  \ \  \ \  \ \    / / 
+      \ \  \|\  \ \  \ \  \ \  \____\ \  \ \  \ \  \ \  \ \  / /  
+       \ \_______\ \__\ \__\ \_______\ \__\ \__\ \__\ \__\ \__/ /   
+        \|_______|\|__|\|__|\|_______|\|__|\|__|\|__|\|__|\|__|/    
+                                                                    
+     ________  ___  ___  ________  _______   ________  ________     
+    |\   ____\|\  \|\  \|\   __  \|\  ___ \ |\   __  \|\   ____\    
+    \ \  \___|\ \  \\\  \ \  \|\ /\ \   __/|\ \  \|\  \ \  \___|    
+     \ \  \    \ \  \\\  \ \   __  \ \  \_|/_\ \   _  _\\ \  \       
+      \ \  \____\ \  \\\  \ \  \|\  \ \  \_|\ \ \  \\  \\ \  \____  
+       \ \_______\ \_______\ \_______\ \_______\ \__\\ _\\ \_______\
+        \|_______|\|_______|\|_______|\|_______|\|__|\|__|\|_______|
+    \033[0m
+    \033[92m[SYSTEM READY]\033[0m Initializing Galaxy-Cyberdeck Node...
+    """)
     parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Pi Client")
     parser.add_argument("--ip", default=config.PHONE_IP, help=f"IP address of the Galaxy phone (default: {config.PHONE_IP})")
     parser.add_argument("--port", default=config.PHONE_PORT, type=int, help=f"Port of the Termux server (default: {config.PHONE_PORT})")
