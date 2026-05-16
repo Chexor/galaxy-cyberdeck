@@ -7,3 +7,18 @@ ENV/
 .env
 .DS_Store
 tools/
+
+# Media Exclusions
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+*.flac
+# Project specific patterns
+snap_*.jpg
+snapshot.jpg
