@@ -10,7 +10,8 @@ cd "$PROJECT_DIR"
 NODE_IP=$(grep "PHONE_IP =" config.py | cut -d '"' -f 2)
 
 show_help() {
-    echo -e "\033[95m"
+    cat << "EOF"
+\033[95m
    _____       _                                  
   / ____|     | |                                 
  | |  __  __ _| | __ ___  ___   _                 
@@ -25,7 +26,8 @@ show_help() {
   \_____\__, |_.__/ \___|_|  \__,_|\___|\___|_|\_\
          __/ |                                    
         |___/                                     
-        \033[0m"
+\033[0m
+EOF
     echo -e "Usage: \033[1mcyberdeck {category} {command}\033[0m\n"
     echo "Categories:"
     echo "  node <cmd>    - Infrastructure: start, stop, restart, update, status"
