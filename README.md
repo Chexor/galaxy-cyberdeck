@@ -5,24 +5,24 @@ Turn your Samsung Galaxy phone into a portable smart terminal and sensor node fo
 ## Project Goal
 Create a bridge between Android's powerful hardware sensors (GPS, Accelerometer, Battery) and a central controller (initially a Laptop, later a Raspberry Pi).
 
-## Quick Start (Phase 2)
-This project is now in **Phase 2: Pi Deployment**. We are moving the "Brain" to a Raspberry Pi.
+## Quick Start
+This project consists of a **Node** (the phone) and a **Client** (Laptop, Raspberry Pi, etc.).
 
-### 1. Setup the Phone
+### 1. Setup the Phone (Node)
 - Install **Termux**, **Termux:API**, and **Termux:Boot**.
 - Clone this repo in Termux.
 - Run `python termux-node/sensor_server.py`.
 - See [Termux Setup Guide](docs/setup-termux.md) for details.
 
-### 2. Setup the Pi
-- Clone this repo on your Raspberry Pi.
+### 2. Setup the Controller (Client)
+- Clone this repo on your Raspberry Pi, Laptop, or workstation.
 - Update `config.py` with your phone's IP address.
-- Run `python pi-client/read_sensors.py`.
-- See [Pi Setup Guide](docs/setup-raspberry-pi.md) for details.
+- Run `python client/read_sensors.py`.
+- See [Pi Setup Guide](docs/setup-raspberry-pi.md) for Pi-specific details.
 
 ## Project Structure
 - `termux-node/`: Flask server for the Android phone.
-- `pi-client/`: Polling client for the Raspberry Pi.
+- `client/`: Universal polling client for any Linux/macOS/Windows machine.
 - `config.py`: Central configuration for device IPs and ports.
 - `docs/`: Setup and architectural documentation.
 

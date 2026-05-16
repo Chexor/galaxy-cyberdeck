@@ -45,7 +45,7 @@ def main():
     \033[0m
     \033[92m[SYSTEM READY]\033[0m Initializing Galaxy-Cyberdeck Node...
     """)
-    parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Pi Client")
+    parser = argparse.ArgumentParser(description="Galaxy Cyberdeck Universal Client")
     parser.add_argument("--ip", default=config.PHONE_IP, help=f"IP address of the Galaxy phone (default: {config.PHONE_IP})")
     parser.add_argument("--port", default=config.PHONE_PORT, type=int, help=f"Port of the Termux server (default: {config.PHONE_PORT})")
     parser.add_argument("--interval", default=config.POLL_INTERVAL, type=int, help=f"Polling interval in seconds (default: {config.POLL_INTERVAL})")
