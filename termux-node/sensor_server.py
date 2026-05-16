@@ -98,12 +98,11 @@ def torch(state):
 
 @app.route('/info')
 def info():
-    device_info = {
+    # We only use getprop now. It's instant and doesn't touch the clipboard.
+    return jsonify({
         "model": run_termux_command("getprop ro.product.model"),
-        "android_version": run_termux_command("getprop ro.build.version.release"),
-        "termux_api_version": run_termux_command("termux-info | grep termux-api") # Simplified
-    }
-    return jsonify(device_info)
+        "android_version": run_termux_command("getprop ro.build.version.release")
+    })
 
 if __name__ == '__main__':
     # Listen on all interfaces so the laptop can connect
