@@ -21,6 +21,11 @@ case "$1" in
             fi
 
             echo "Starting Galaxy Cyberdeck Server..."
+            # Ensure SSH is running for future management
+            if ! pgrep sshd > /dev/null; then
+                echo "Starting SSH server..."
+                sshd -p 8022
+            fi
             nohup python "$SERVER_SCRIPT" > "$LOG_FILE" 2>&1 &
             echo "Server started in background. Logs: $LOG_FILE"
         fi

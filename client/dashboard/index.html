@@ -155,7 +155,7 @@
         <h1>GALAXY CYBERDECK : : COCKPIT</h1>
         <div id="connection-status">
             <span class="status-dot" id="dot"></span>
-            NODE: <span id="node-name">SEARCHING...</span> @ <span id="node-ip">0.0.0.0</span>
+            NODE: <span id="node-name">SEARCHING...</span> @ <span id="node-ip">USB-BRIDGE</span>
         </div>
     </header>
 
@@ -196,21 +196,18 @@
         <div class="card">
             <h2>System Logs</h2>
             <div id="log-display" style="font-size: 0.7rem; overflow-y: auto; height: 180px; color: #888;">
-                [INFO] Initializing Web Dashboard...<br>
+                [INFO] Initializing Cyberdeck Bridge (USB)...<br>
                 [INFO] Ready for connection.
             </div>
         </div>
     </div>
 
     <div id="config-banner">
-        Configure Node IP in config.js
+        Cyberdeck Bridge Mode: Active (USB)
     </div>
 
     <!-- We use a small script to inject the config -->
     <script>
-        // Default Config (Will be overridden by config.py values later)
-        let NODE_IP = "192.168.0.137"; // Change this to your phone's IP
-        const PORT = 5000;
         let torchOn = false;
         let isPolling = false;
 
@@ -227,7 +224,8 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
                 
-                const response = await fetch(`http://${NODE_IP}:${PORT}/${endpoint}`, { 
+                // Use relative paths for the Pi proxy
+                const response = await fetch(`/api/${endpoint}`, { 
                     signal: controller.signal 
                 });
                 
@@ -248,8 +246,6 @@
                 const info = await fetchSensor('info');
                 const dot = document.getElementById('dot');
                 const nodeName = document.getElementById('node-name');
-                const nodeIpDisp = document.getElementById('node-ip');
-                nodeIpDisp.innerText = NODE_IP;
 
                 if (info && !info.error) {
                     dot.className = "status-dot status-online";
@@ -307,7 +303,7 @@
             
             try {
                 // We add a timestamp to bypass browser cache
-                const url = `http://${NODE_IP}:${PORT}/snapshot?t=${Date.now()}`;
+                const url = `/api/snapshot?t=${Date.now()}`;
                 display.style.backgroundImage = `url('${url}')`;
                 display.innerText = "";
                 log("Snapshot Received.");
@@ -317,16 +313,9 @@
             }
         }
 
-        // Start Polling with a safer 2-second interval
-        setInterval(updateDashboard, 2000);
+        // Start Polling with a safer 2.5-second interval
+        setInterval(updateDashboard, 2500);
         updateDashboard();
-
-        // Check URL parameters for IP override
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('ip')) {
-            NODE_IP = urlParams.get('ip');
-            log(`IP Override Detected: ${NODE_IP}`);
-        }
     </script>
 </body>
 </html>
